@@ -249,6 +249,44 @@ td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text2);ve
 tr:last-child td{border-bottom:none}
 tbody tr{transition:background var(--t1)}
 tbody tr:hover td{background:rgba(196,163,86,0.04)}
+tbody tr.dt-row-sel td{background:rgba(196,163,86,0.09)}
+th.dt-sortable{cursor:pointer;user-select:none}
+th.dt-sortable:hover{color:var(--gold3)}
+th.dt-sortable .dt-arrow{display:inline-block;margin-left:4px;opacity:0.35;font-size:9px}
+th.dt-sortable.dt-sort-active .dt-arrow{opacity:1;color:var(--gold3)}
+th.dt-check,td.dt-check{width:32px;padding-left:14px;padding-right:0}
+th.dt-check input,td.dt-check input{accent-color:var(--gold);cursor:pointer}
+
+/* ── DATA TABLE TOOLBAR (matches .tb-search / .btn-primary language) ── */
+.dt-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.dt-search{display:flex;align-items:center;gap:8px;background:rgba(196,163,86,0.05);border:1px solid var(--border);border-radius:24px;padding:8px 16px 8px 14px;min-width:200px;max-width:280px;flex:1;transition:all var(--t2)}
+.dt-search:focus-within{border-color:var(--border3);background:rgba(196,163,86,0.08);box-shadow:0 0 0 3px rgba(196,163,86,0.07)}
+.dt-search::before{content:'⌕';color:var(--gold);font-size:14px;font-weight:700;line-height:1}
+.dt-search input{flex:1;background:none;border:none;outline:none;font-size:12.5px;color:var(--text);font-family:'Outfit',sans-serif}
+.dt-search input::placeholder{color:var(--text3)}
+.dt-count{font-size:11px;color:var(--text3);white-space:nowrap;font-weight:500;letter-spacing:0.2px}
+.dt-toolbar-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.dt-btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:rgba(196,163,86,0.05);color:var(--text2);font-family:'Outfit',sans-serif;transition:all var(--t1) var(--ease-out)}
+.dt-btn:hover{border-color:var(--border2);color:var(--gold);background:rgba(196,163,86,0.08);transform:translateY(-1px);box-shadow:var(--s1)}
+.dt-bulkbar{display:none;align-items:center;gap:12px;padding:10px 16px;margin-bottom:12px;border-radius:12px;background:linear-gradient(135deg,var(--ink) 0%,var(--ink3) 100%);border:1px solid rgba(196,163,86,0.25);font-size:12.5px;color:rgba(244,236,218,0.85);box-shadow:var(--s1),inset 0 1px 0 rgba(196,163,86,0.12)}
+.dt-bulkbar.show{display:flex;animation:pg-enter var(--t2) var(--ease-out)}
+.dt-bulkbar strong{color:var(--gold3);font-family:'Playfair Display',serif;font-size:14px;font-weight:600}
+.dt-bulkbar .dt-btn{margin-left:auto;background:rgba(255,255,255,0.06);border-color:rgba(196,163,86,0.2);color:var(--gold3)}
+.dt-bulkbar .dt-btn:hover{background:rgba(196,163,86,0.16);color:var(--gold4)}
+.dt-bulkbar .dt-btn.danger{color:#f08070;border-color:rgba(217,68,50,0.35)}
+.dt-bulkbar .dt-btn.danger:hover{background:rgba(217,68,50,0.16);color:#ffb0a0}
+
+/* ── ASSET HISTORY TIMELINE ─────────────────────────── */
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text3)}
+.btn-ghost:hover{border-color:var(--gold2);color:var(--gold);background:rgba(196,163,86,0.06)}
+.ah-timeline{position:relative;padding-left:26px;max-height:56vh;overflow-y:auto}
+.ah-timeline::before{content:'';position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:linear-gradient(180deg,var(--gold2),var(--border2))}
+.ah-item{position:relative;padding-bottom:18px}
+.ah-item:last-child{padding-bottom:0}
+.ah-item::before{content:'';position:absolute;left:-26px;top:3px;width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 3px rgba(196,163,86,0.15)}
+.ah-item .ah-txt{font-size:13px;color:var(--text2);font-weight:500}
+.ah-item .ah-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.ah-empty{text-align:center;padding:30px 0;color:var(--text3);font-size:12.5px}
 
 /* ── BADGES ──────────────────────────────────────────── */
 .badge{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
@@ -1036,23 +1074,46 @@ textarea.finput{resize:vertical;min-height:72px}
     <div class="g2 mb20">
       <div class="card">
         <div class="card-header"><div class="card-title"><span>Usable</span> Materials</div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-pantry')">Add Item</button></div>
+        <div id="pu-toolbar"></div>
+        <div id="pu-bulkbar"></div>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Cycle</th><th>Actions</th></tr></thead>
+          <thead id="pu-thead"><tr>
+            <th class="dt-check"><input type="checkbox" onchange="dtToggleAll('pu',_puIds,this)"></th>
+            <th class="dt-sortable" data-key="item" onclick="dtSort('pu','item',renderPantryUsable)">Item<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="qty" onclick="dtSort('pu','qty',renderPantryUsable)">Qty<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="price" onclick="dtSort('pu','price',renderPantryUsable)">Unit Price<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="total" onclick="dtSort('pu','total',renderPantryUsable)">Total<span class="dt-arrow">▲</span></th>
+            <th>Cycle</th><th>Actions</th></tr></thead>
           <tbody id="pantry-usable"></tbody>
         </table></div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title"><span>Fixed</span> Materials</div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-fixed')">Add Item</button></div>
+        <div id="pf-toolbar"></div>
+        <div id="pf-bulkbar"></div>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>Item</th><th>Qty</th><th>Value</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead id="pf-thead"><tr>
+            <th class="dt-check"><input type="checkbox" onchange="dtToggleAll('pf',_pfIds,this)"></th>
+            <th class="dt-sortable" data-key="item" onclick="dtSort('pf','item',renderPantryFixed)">Item<span class="dt-arrow">▲</span></th>
+            <th>Qty</th>
+            <th class="dt-sortable" data-key="value" onclick="dtSort('pf','value',renderPantryFixed)">Value<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="date" onclick="dtSort('pf','date',renderPantryFixed)">Date<span class="dt-arrow">▲</span></th>
+            <th>Status</th><th>Actions</th></tr></thead>
           <tbody id="pantry-fixed"></tbody>
         </table></div>
       </div>
     </div>
     <div class="card">
       <div class="card-header"><div class="card-title">Month-wise <span>Expense Record</span></div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-month')">Add Entry</button></div>
+      <div id="pm-toolbar"></div>
+      <div id="pm-bulkbar"></div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Month</th><th>5th Order</th><th>20th Order</th><th>Fixed</th><th>Total</th><th>vs Avg</th><th>Actions</th></tr></thead>
+        <thead id="pm-thead"><tr>
+          <th class="dt-check"><input type="checkbox" onchange="dtToggleAll('pm',_pmIds,this)"></th>
+          <th class="dt-sortable" data-key="month" onclick="dtSort('pm','month',renderPantryMonthly)">Month<span class="dt-arrow">▲</span></th>
+          <th>5th Order</th><th>20th Order</th><th>Fixed</th>
+          <th class="dt-sortable" data-key="total" onclick="dtSort('pm','total',renderPantryMonthly)">Total<span class="dt-arrow">▲</span></th>
+          <th>vs Avg</th><th>Actions</th></tr></thead>
         <tbody id="pantry-monthly"></tbody>
       </table></div>
       <div style="margin-top:14px;padding:14px;background:rgba(184,147,90,0.06);border-radius:9px;display:flex;gap:30px;flex-wrap:wrap;border:1px solid var(--border)">
@@ -1074,15 +1135,28 @@ textarea.finput{resize:vertical;min-height:72px}
     <div class="g2">
       <div class="card">
         <div class="card-header"><div class="card-title"><span>Current</span> Stock</div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-stat')">Add Item</button></div>
+        <div id="ss-toolbar"></div>
+        <div id="ss-bulkbar"></div>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>Item</th><th>Stock</th><th>Unit Price</th><th>Reorder</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead id="ss-thead"><tr>
+            <th class="dt-check"><input type="checkbox" onchange="dtToggleAll('ss',_ssIds,this)"></th>
+            <th class="dt-sortable" data-key="item" onclick="dtSort('ss','item',renderStatStock)">Item<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="stock" onclick="dtSort('ss','stock',renderStatStock)">Stock<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="price" onclick="dtSort('ss','price',renderStatStock)">Unit Price<span class="dt-arrow">▲</span></th>
+            <th>Reorder</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody id="stat-stock"></tbody>
         </table></div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title">Monthly <span>Expense Log</span></div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-stat-month')">Add Entry</button></div>
+        <div id="sm-toolbar"></div>
+        <div id="sm-bulkbar"></div>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>Month</th><th>Spend</th><th>Items</th><th>vs Avg</th><th>Actions</th></tr></thead>
+          <thead id="sm-thead"><tr>
+            <th class="dt-check"><input type="checkbox" onchange="dtToggleAll('sm',_smIds,this)"></th>
+            <th class="dt-sortable" data-key="month" onclick="dtSort('sm','month',renderStatMonthly)">Month<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="spend" onclick="dtSort('sm','spend',renderStatMonthly)">Spend<span class="dt-arrow">▲</span></th>
+            <th>Items</th><th>vs Avg</th><th>Actions</th></tr></thead>
           <tbody id="stat-monthly"></tbody>
         </table></div>
         <div style="margin-top:12px;padding:12px;background:rgba(184,147,90,0.06);border-radius:8px;border:1px solid var(--border);display:flex;gap:24px;flex-wrap:wrap">
@@ -1134,8 +1208,17 @@ textarea.finput{resize:vertical;min-height:72px}
         </div>
       </div>
       <div class="alert alert-info" style="margin-bottom:14px">Hover blurred fields to reveal. Sensitive data is obfuscated.</div>
+      <div id="assets-toolbar"></div>
+      <div id="assets-bulkbar"></div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Asset ID</th><th>Type</th><th>Brand / Model</th><th>Serial No.</th><th>Allocated To</th><th>Password</th><th>Recovery</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead id="assets-thead"><tr>
+          <th class="dt-check"><input type="checkbox" onchange="dtToggleAll('assets',_assetIds,this)"></th>
+          <th class="dt-sortable" data-key="id" onclick="dtSort('assets','id',function(){renderAssets(_astFilter,_astSearch)})">Asset ID<span class="dt-arrow">▲</span></th>
+          <th>Type</th>
+          <th class="dt-sortable" data-key="model" onclick="dtSort('assets','model',function(){renderAssets(_astFilter,_astSearch)})">Brand / Model<span class="dt-arrow">▲</span></th>
+          <th>Serial No.</th>
+          <th class="dt-sortable" data-key="emp" onclick="dtSort('assets','emp',function(){renderAssets(_astFilter,_astSearch)})">Allocated To<span class="dt-arrow">▲</span></th>
+          <th>Password</th><th>Recovery</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody id="assets-tbody"></tbody>
       </table></div>
     </div>
@@ -1159,8 +1242,17 @@ textarea.finput{resize:vertical;min-height:72px}
     <div id="inv-packaging">
       <div class="card">
         <div class="card-header"><div class="card-title">Packaging <span>Stock</span></div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-pkg')">Add</button></div>
+        <div id="inv-pkg-toolbar"></div>
+        <div id="inv-pkg-bulkbar"></div>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>Item</th><th>Size</th><th>Qty</th><th>Cost/Unit</th><th>Reorder</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead id="inv-pkg-thead"><tr>
+            <th class="dt-check"><input type="checkbox" onchange="dtToggleAll('inv-pkg',_invPkgIds,this)"></th>
+            <th class="dt-sortable" data-key="item" onclick="dtSort('inv-pkg','item',renderInvPackaging)">Item<span class="dt-arrow">▲</span></th>
+            <th>Size</th>
+            <th class="dt-sortable" data-key="qty" onclick="dtSort('inv-pkg','qty',renderInvPackaging)">Qty<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="cost" onclick="dtSort('inv-pkg','cost',renderInvPackaging)">Cost/Unit<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="reorder" onclick="dtSort('inv-pkg','reorder',renderInvPackaging)">Reorder<span class="dt-arrow">▲</span></th>
+            <th>Status</th><th>Actions</th></tr></thead>
           <tbody id="inv-pkg-tbody"></tbody>
         </table></div>
       </div>
@@ -1168,8 +1260,17 @@ textarea.finput{resize:vertical;min-height:72px}
     <div id="inv-marketing" style="display:none">
       <div class="card">
         <div class="card-header"><div class="card-title">Marketing <span>Materials</span></div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-mkt')">Add</button></div>
+        <div id="inv-mkt-toolbar"></div>
+        <div id="inv-mkt-bulkbar"></div>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>Item</th><th>Size/Type</th><th>Qty</th><th>Cost/Unit</th><th>Reorder</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead id="inv-mkt-thead"><tr>
+            <th class="dt-check"><input type="checkbox" onchange="dtToggleAll('inv-mkt',_invMktIds,this)"></th>
+            <th class="dt-sortable" data-key="item" onclick="dtSort('inv-mkt','item',renderInvMarketing)">Item<span class="dt-arrow">▲</span></th>
+            <th>Size/Type</th>
+            <th class="dt-sortable" data-key="qty" onclick="dtSort('inv-mkt','qty',renderInvMarketing)">Qty<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="cost" onclick="dtSort('inv-mkt','cost',renderInvMarketing)">Cost/Unit<span class="dt-arrow">▲</span></th>
+            <th class="dt-sortable" data-key="reorder" onclick="dtSort('inv-mkt','reorder',renderInvMarketing)">Reorder<span class="dt-arrow">▲</span></th>
+            <th>Status</th><th>Actions</th></tr></thead>
           <tbody id="inv-mkt-tbody"></tbody>
         </table></div>
       </div>
@@ -1219,8 +1320,16 @@ textarea.finput{resize:vertical;min-height:72px}
         <div class="tab" onclick="renderCredentials('Software',this)">Software</div>
         <div class="tab" onclick="renderCredentials('E-Commerce',this)">E-Commerce</div>
       </div>
+      <div id="cred-toolbar"></div>
+      <div id="cred-bulkbar"></div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Platform</th><th>Category</th><th>Username / Email</th><th>Password</th><th>2FA</th><th>Recovery</th><th>Updated</th><th>Actions</th></tr></thead>
+        <thead id="cred-thead"><tr>
+          <th class="dt-check"><input type="checkbox" onchange="dtToggleAll('cred',_credIds,this)"></th>
+          <th class="dt-sortable" data-key="platform" onclick="dtSort('cred','platform',function(){renderCredentials(_credFilter)})">Platform<span class="dt-arrow">▲</span></th>
+          <th class="dt-sortable" data-key="cat" onclick="dtSort('cred','cat',function(){renderCredentials(_credFilter)})">Category<span class="dt-arrow">▲</span></th>
+          <th>Username / Email</th><th>Password</th><th>2FA</th><th>Recovery</th>
+          <th class="dt-sortable" data-key="updated" onclick="dtSort('cred','updated',function(){renderCredentials(_credFilter)})">Updated<span class="dt-arrow">▲</span></th>
+          <th>Actions</th></tr></thead>
         <tbody id="cred-tbody"></tbody>
       </table></div>
     </div>
@@ -1256,9 +1365,18 @@ textarea.finput{resize:vertical;min-height:72px}
         <select class="finput" id="dv-filter-status" style="max-width:150px" onchange="renderDocVault()">
           <option value="">All Status</option><option>Available</option><option>Issued</option><option>Archived</option><option>Missing</option>
         </select>
+        <button class="dt-btn" style="margin-left:auto" onclick="dtExportCSV(_dvLastFiltered||[],[{key:'name',label:'Document Name'},{key:'cat',label:'Category'},{key:'ref',label:'Reference No.'},{key:'loc',label:'Location'},{key:'status',label:'Status'},{key:'by',label:'Added By'},{key:'added',label:'Date Added'}],'document-vault')">⇩ Export CSV</button>
       </div>
+      <div id="dv-bulkbar"></div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Document Name</th><th>Category</th><th>Reference No.</th><th>Location</th><th>Status</th><th>Added By</th><th>Date Added</th><th>Actions</th></tr></thead>
+        <thead id="dv-thead"><tr>
+          <th class="dt-check"><input type="checkbox" onchange="dtToggleAll('dv',_dvIds,this)"></th>
+          <th class="dt-sortable" data-key="name" onclick="dtSort('dv','name',renderDocVault)">Document Name<span class="dt-arrow">▲</span></th>
+          <th>Category</th><th>Reference No.</th><th>Location</th>
+          <th class="dt-sortable" data-key="status" onclick="dtSort('dv','status',renderDocVault)">Status<span class="dt-arrow">▲</span></th>
+          <th>Added By</th>
+          <th class="dt-sortable" data-key="added" onclick="dtSort('dv','added',renderDocVault)">Date Added<span class="dt-arrow">▲</span></th>
+          <th>Actions</th></tr></thead>
         <tbody id="dv-tbody"></tbody>
       </table></div>
     </div>
@@ -1513,6 +1631,13 @@ textarea.finput{resize:vertical;min-height:72px}
   <div class="frow f2"><div><label class="flabel">Device Password</label><input type="password" class="finput" id="ast-pass" placeholder="Stored securely"></div><div><label class="flabel">Recovery Key</label><input class="finput" id="ast-rec" placeholder="Recovery code"></div></div>
   <div class="frow f2"><div><label class="flabel">Status</label><select class="finput" id="ast-status"><option>Active</option><option>Available</option><option>Repair</option><option>Retired</option></select></div><div><label class="flabel">Notes</label><input class="finput" id="ast-notes" placeholder="Optional"></div></div>
   <div class="modal-footer"><button class="btn btn-primary" style="flex:1" onclick="saveAsset()">Register Asset</button><button class="btn btn-outline" onclick="closeModal('m-add-asset')">Cancel</button></div>
+</div></div>
+
+<div class="overlay" id="m-asset-history"><div class="modal">
+  <div class="modal-title">Asset History <span id="ah-asset-label" style="color:var(--gold);font-weight:400"></span></div>
+  <button class="modal-close" onclick="closeModal('m-asset-history')">×</button>
+  <div id="ah-body" class="ah-timeline"><div class="ah-empty">Loading…</div></div>
+  <div class="modal-footer"><button class="btn btn-outline" style="flex:1" onclick="closeModal('m-asset-history')">Close</button></div>
 </div></div>
 
 
@@ -2580,30 +2705,40 @@ function renderActivity(){
   }).join('');
 }
 // ── ACTION BUTTONS HELPER ────────────────────────────
-function actionBtns(editCall, delCall){
+function actionBtns(editCall, delCall, extraHtml){
   return '<div class="action-btns">'+
+    (extraHtml||'')+
     '<button class="btn btn-edit btn-sm" onclick="'+editCall+'">Edit</button>'+
     '<button class="btn btn-del btn-sm" onclick="'+delCall+'">Delete</button>'+
     '</div>';
 }
 
+var _puIds=[];
 function renderPantryUsable(){
-  var data=load(DB.pantryUsable);
+  var raw=load(DB.pantryUsable);
   var tb=$id('pantry-usable'); if(!tb) return;
   if(FETCH_FAILED && FETCH_FAILED['pantryUsable']){
-    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Pantry (Usable) failed to load. Check your connection and refresh.</td></tr>';
+    tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Pantry (Usable) failed to load. Check your connection and refresh.</td></tr>';
     st('pantry-usable-count','—'); return;
   }
-  st('pantry-usable-count',data.length);
+  var data = dtProcess('pu', raw, ['item','cycle']);
+  _puIds = data.map(function(r){ return r.id; });
+  var tbEl=$id('pu-toolbar'); if(tbEl) tbEl.innerHTML = dtToolbarHTML('pu',{placeholder:'Search usable materials…',count:data.length,renderFnName:'renderPantryUsable',onExport:"dtExportCSV(dtProcess('pu',load(DB.pantryUsable),['item','cycle']),[{key:'item',label:'Item'},{key:'qty',label:'Qty'},{key:'unit',label:'Unit'},{key:'price',label:'Unit Price'},{key:'total',label:'Total'},{key:'cycle',label:'Cycle'}],'pantry-usable')"});
+  var bbEl=$id('pu-bulkbar'); if(bbEl) bbEl.innerHTML = dtBulkbarHTML('pu',{onBulkDelete:"dtBulkDelete('pu','pantryUsable',function(){renderPantryUsable();calcDashboard();},'item')"});
+  dtPaintSortHeaders('pu-thead','pu');
+  dtUpdateBulkbar('pu');
+  st('pantry-usable-count',raw.length);
   tb.innerHTML=data.map(function(r){
-    return '<tr>'+
+    var sel=!!dtGet('pu').selected[r.id];
+    return '<tr class="'+(sel?'dt-row-sel':'')+'">'+
+      '<td class="dt-check"><input type="checkbox" '+(sel?'checked':'')+' onchange="dtToggleRow(\'pu\',\''+r.id+'\',this)"></td>'+
       '<td class="strong">'+esc(r.item)+'</td>'+
       '<td>'+esc(r.qty)+' '+esc(r.unit)+'</td>'+
       '<td>'+fmtINR(r.price)+'</td>'+
       '<td>'+fmtINR(r.total)+'</td>'+
       '<td><span class="otag">'+esc((r.cycle||'').replace(' of Month',''))+'</span></td>'+
       '<td>'+actionBtns("editPU('"+r.id+"')","confirmDel('"+r.id+"','pantryUsable',function(){renderPantryUsable();calcDashboard();},'Pantry item deleted')")+'</td></tr>';
-  }).join('');
+  }).join('') || '<tr><td colspan="7"><div class="tbl-empty"><div class="ee-icon">◇</div><div class="ee-title">No usable materials found</div></div></td></tr>';
 }
 async function savePantryUsable(){
   var item=$v('pu-item'),cycle=$v('pu-cycle'),qty=$v('pu-qty'),unit=$v('pu-unit'),price=$n('pu-price');
@@ -2628,22 +2763,31 @@ function editPU(id){
 }
 
 // ── PANTRY FIXED ─────────────────────────────────────
+var _pfIds=[];
 function renderPantryFixed(){
-  var data=load(DB.pantryFixed);
+  var raw=load(DB.pantryFixed);
   var tb=$id('pantry-fixed'); if(!tb) return;
   if(FETCH_FAILED && FETCH_FAILED['pantryFixed']){
-    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Pantry (Fixed) failed to load. Check your connection and refresh.</td></tr>';
+    tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Pantry (Fixed) failed to load. Check your connection and refresh.</td></tr>';
     st('pantry-fixed-count','—'); return;
   }
-  st('pantry-fixed-count',data.length);
+  var data = dtProcess('pf', raw, ['item','status']);
+  _pfIds = data.map(function(r){ return r.id; });
+  var tbEl=$id('pf-toolbar'); if(tbEl) tbEl.innerHTML = dtToolbarHTML('pf',{placeholder:'Search fixed materials…',count:data.length,renderFnName:'renderPantryFixed',onExport:"dtExportCSV(dtProcess('pf',load(DB.pantryFixed),['item','status']),[{key:'item',label:'Item'},{key:'qty',label:'Qty'},{key:'value',label:'Value'},{key:'date',label:'Date'},{key:'status',label:'Status'}],'pantry-fixed')"});
+  var bbEl=$id('pf-bulkbar'); if(bbEl) bbEl.innerHTML = dtBulkbarHTML('pf',{onBulkDelete:"dtBulkDelete('pf','pantryFixed',renderPantryFixed,'item')"});
+  dtPaintSortHeaders('pf-thead','pf');
+  dtUpdateBulkbar('pf');
+  st('pantry-fixed-count',raw.length);
   var bm={Active:'bg','Service Due':'bgo',Broken:'br'};
   tb.innerHTML=data.map(function(r){
-    return '<tr>'+
+    var sel=!!dtGet('pf').selected[r.id];
+    return '<tr class="'+(sel?'dt-row-sel':'')+'">'+
+      '<td class="dt-check"><input type="checkbox" '+(sel?'checked':'')+' onchange="dtToggleRow(\'pf\',\''+r.id+'\',this)"></td>'+
       '<td class="strong">'+esc(r.item)+'</td><td>'+r.qty+'</td>'+
       '<td>'+fmtINR(r.value)+'</td><td>'+fmtMon(r.date)+'</td>'+
       '<td><span class="badge '+(bm[r.status]||'bgy')+'">'+esc(r.status)+'</span></td>'+
       '<td>'+actionBtns("editPF('"+r.id+"')","confirmDel('"+r.id+"','pantryFixed',renderPantryFixed,'Fixed item deleted')")+'</td></tr>';
-  }).join('');
+  }).join('') || '<tr><td colspan="7"><div class="tbl-empty"><div class="ee-icon">◇</div><div class="ee-title">No fixed materials found</div></div></td></tr>';
 }
 async function savePantryFixed(){
   var item=$v('pf-item'),qty=$n('pf-qty')||1,value=$n('pf-value'),date=$v('pf-date'),status=$v('pf-status');
@@ -2664,20 +2808,29 @@ function editPF(id){
 }
 
 // ── PANTRY MONTHLY ───────────────────────────────────
+var _pmIds=[];
 function renderPantryMonthly(){
-  var data=load(DB.pantryMonthly);
+  var raw=load(DB.pantryMonthly);
   var tb=$id('pantry-monthly'); if(!tb) return;
   if(FETCH_FAILED && FETCH_FAILED['pantryMonthly']){
-    tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Pantry Monthly data failed to load. Check your connection and refresh.</td></tr>';
+    tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Pantry Monthly data failed to load. Check your connection and refresh.</td></tr>';
     st('pantry-6m-avg','—'); st('pantry-annual-proj','—'); st('pantry-highest-month','—'); st('pantry-latest','—'); st('pantry-6m-stat','—'); return;
   }
-  var totals=data.map(function(r){return Number(r.total||0);});
+  var totals=raw.map(function(r){return Number(r.total||0);});
   var avg=totals.length?Math.round(totals.reduce(function(a,b){return a+b;},0)/totals.length):0;
+  var data = dtProcess('pm', raw, ['month']);
+  _pmIds = data.map(function(r){ return r.id; });
+  var tbEl=$id('pm-toolbar'); if(tbEl) tbEl.innerHTML = dtToolbarHTML('pm',{placeholder:'Search month…',count:data.length,renderFnName:'renderPantryMonthly',onExport:"dtExportCSV(dtProcess('pm',load(DB.pantryMonthly),['month']),[{key:'month',label:'Month'},{key:'order5',label:'5th Order'},{key:'order20',label:'20th Order'},{key:'fixed',label:'Fixed'},{key:'total',label:'Total'}],'pantry-monthly')"});
+  var bbEl=$id('pm-bulkbar'); if(bbEl) bbEl.innerHTML = dtBulkbarHTML('pm',{onBulkDelete:"dtBulkDelete('pm','pantryMonthly',function(){renderPantryMonthly();calcDashboard();},'entry')"});
+  dtPaintSortHeaders('pm-thead','pm');
+  dtUpdateBulkbar('pm');
   tb.innerHTML=data.map(function(r){
     var diff=avg?Math.round((Number(r.total)-avg)/avg*100):0;
     var badge=r.note==='Ongoing'?'<span class="badge bb">Ongoing</span>':
       diff>0?'<span class="badge bgo">+'+diff+'%</span>':'<span class="badge br">'+diff+'%</span>';
-    return '<tr>'+
+    var sel=!!dtGet('pm').selected[r.id];
+    return '<tr class="'+(sel?'dt-row-sel':'')+'">'+
+      '<td class="dt-check"><input type="checkbox" '+(sel?'checked':'')+' onchange="dtToggleRow(\'pm\',\''+r.id+'\',this)"></td>'+
       '<td><strong>'+esc(fmtMon(r.month))+'</strong></td>'+
       '<td>'+fmtINR(r.order5||0)+'</td>'+
       '<td>'+(r.order20?fmtINR(r.order20):'—')+'</td>'+
@@ -2687,9 +2840,9 @@ function renderPantryMonthly(){
       '<td>'+actionBtns("editPM('"+r.id+"')","confirmDel('"+r.id+"','pantryMonthly',function(){renderPantryMonthly();calcDashboard();},'Entry deleted')")+'</td></tr>';
   }).join('');
   st('pantry-6m-avg',fmtINR(avg)+'/mo'); st('pantry-annual-proj',fmtINR(avg*12)+'/yr');
-  var maxM=data.length?data.reduce(function(a,b){return Number(b.total)>Number(a.total)?b:a;}):null;
+  var maxM=raw.length?raw.reduce(function(a,b){return Number(b.total)>Number(a.total)?b:a;}):null;
   st('pantry-highest-month',maxM?fmtMon(maxM.month):'—');
-  st('pantry-latest',data[0]?fmtINR(data[0].total):'—');
+  st('pantry-latest',raw[0]?fmtINR(raw[0].total):'—');
   st('pantry-6m-stat',fmtINR(avg)+'/mo');
 }
 async function savePantryMonthly(){
@@ -2712,28 +2865,37 @@ function editPM(id){
   st('mt-month','Edit Monthly Entry'); openModal('m-add-month');
 }
 // ── STATIONERY ───────────────────────────────────────
+var _ssIds=[];
 function renderStatStock(){
-  var data=load(DB.statStock);
+  var raw=load(DB.statStock);
   var tb=$id('stat-stock'); if(!tb) return;
   // Guard: show error state when stationery_stock failed to load
   if(FETCH_FAILED && FETCH_FAILED['statStock']){
-    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--danger,#e74c3c);padding:24px 0;">'+
+    tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--danger,#e74c3c);padding:24px 0;">'+
       '\u26a0\ufe0f Stationery Stock failed to load. Check your connection and refresh.</td></tr>';
     st('stat-item-count','\u2014');
     var al=$id('stat-low-alert'); if(al) al.style.display='none';
     st('stat-low-count','\u2014');
     return;
   }
-  st('stat-item-count',data.length);
+  var data = dtProcess('ss', raw, ['item','status']);
+  _ssIds = data.map(function(r){ return r.id; });
+  var tbEl=$id('ss-toolbar'); if(tbEl) tbEl.innerHTML = dtToolbarHTML('ss',{placeholder:'Search stationery…',count:data.length,renderFnName:'renderStatStock',onExport:"dtExportCSV(dtProcess('ss',load(DB.statStock),['item','status']),[{key:'item',label:'Item'},{key:'stock',label:'Stock'},{key:'price',label:'Unit Price'},{key:'reorder',label:'Reorder'},{key:'status',label:'Status'}],'stationery-stock')"});
+  var bbEl=$id('ss-bulkbar'); if(bbEl) bbEl.innerHTML = dtBulkbarHTML('ss',{onBulkDelete:"dtBulkDelete('ss','statStock',function(){renderStatStock();calcDashboard();},'item')"});
+  dtPaintSortHeaders('ss-thead','ss');
+  dtUpdateBulkbar('ss');
+  st('stat-item-count',raw.length);
   var bm={Good:'bg',Medium:'bgo',Low:'br'};
   tb.innerHTML=data.map(function(r){
     var low=Number(r.stock)<=Number(r.reorder);
-    return '<tr>'+
+    var sel=!!dtGet('ss').selected[r.id];
+    return '<tr class="'+(sel?'dt-row-sel':'')+'">'+
+      '<td class="dt-check"><input type="checkbox" '+(sel?'checked':'')+' onchange="dtToggleRow(\'ss\',\''+r.id+'\',this)"></td>'+
       '<td class="strong">'+esc(r.item)+'</td>'+
       '<td>'+r.stock+'</td><td>'+fmtINR(r.price)+'</td><td>'+r.reorder+'</td>'+
       '<td><span class="badge '+(low?'br':(bm[r.status]||'bgy'))+'">'+(low?'Low !':r.status)+'</span></td>'+
       '<td>'+actionBtns("editSS('"+r.id+"')","confirmDel('"+r.id+"','statStock',function(){renderStatStock();calcDashboard();},'Item deleted')")+'</td></tr>';
-  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px 0;">No stationery items yet.</td></tr>';
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:24px 0;">No stationery items yet.</td></tr>';
   updateStatAlerts();
 }
 function updateStatAlerts(){
@@ -2762,31 +2924,40 @@ function editSS(id){
   _eid=id; sv('ss-item',r.item); sv('ss-stock',r.stock); sv('ss-price',r.price); sv('ss-reorder',r.reorder);
   st('mt-stat','Edit Stationery Item'); openModal('m-add-stat');
 }
+var _smIds=[];
 function renderStatMonthly(){
-  var data=load(DB.statMonthly);
+  var raw=load(DB.statMonthly);
   var tb=$id('stat-monthly'); if(!tb) return;
   // Guard: show error state when stationery_monthly failed to load
   if(FETCH_FAILED && FETCH_FAILED['statMonthly']){
-    tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--danger,#e74c3c);padding:24px 0;">'+
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--danger,#e74c3c);padding:24px 0;">'+
       '⚠️ Stationery Monthly data failed to load. Check your connection and refresh.</td></tr>';
     st('stat-6m-avg','—'); st('stat-ytd-total','—');
     st('stat-monthly-avg','—'); st('stat-latest','—');
     return;
   }
+  var data = dtProcess('sm', raw, ['month']);
+  _smIds = data.map(function(r){ return r.id; });
+  var tbEl=$id('sm-toolbar'); if(tbEl) tbEl.innerHTML = dtToolbarHTML('sm',{placeholder:'Search month…',count:data.length,renderFnName:'renderStatMonthly',onExport:"dtExportCSV(dtProcess('sm',load(DB.statMonthly),['month']),[{key:'month',label:'Month'},{key:'spend',label:'Spend'},{key:'items',label:'Items'},{key:'vsAvg',label:'vs Avg'}],'stationery-monthly')"});
+  var bbEl=$id('sm-bulkbar'); if(bbEl) bbEl.innerHTML = dtBulkbarHTML('sm',{onBulkDelete:"dtBulkDelete('sm','statMonthly',function(){renderStatMonthly();calcDashboard();},'entry')"});
+  dtPaintSortHeaders('sm-thead','sm');
+  dtUpdateBulkbar('sm');
   tb.innerHTML=data.map(function(r){
     var vb=(r.vsAvg&&r.vsAvg.indexOf('+')===0)?'<span class="badge bg">'+esc(r.vsAvg)+'</span>':'<span class="badge br">'+esc(r.vsAvg||'—')+'</span>';
-    return '<tr>'+
+    var sel=!!dtGet('sm').selected[r.id];
+    return '<tr class="'+(sel?'dt-row-sel':'')+'">'+
+      '<td class="dt-check"><input type="checkbox" '+(sel?'checked':'')+' onchange="dtToggleRow(\'sm\',\''+r.id+'\',this)"></td>'+
       '<td><strong>'+esc(fmtMon(r.month))+'</strong></td>'+
       '<td class="gold-text strong">'+fmtINR(r.spend||0)+'</td>'+
       '<td>'+r.items+'</td><td>'+vb+'</td>'+
       '<td>'+actionBtns("editSM('"+r.id+"')","confirmDel('"+r.id+"','statMonthly',function(){renderStatMonthly();calcDashboard();},'Entry deleted')")+' </td></tr>';
-  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px 0;">No monthly entries yet.</td></tr>';
-  var totals=data.map(function(r){return Number(r.spend||0);});
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px 0;">No monthly entries yet.</td></tr>';
+  var totals=raw.map(function(r){return Number(r.spend||0);});
   var avg=totals.length?Math.round(totals.reduce(function(a,b){return a+b;},0)/totals.length):0;
   st('stat-6m-avg',fmtINR(avg)+'/mo');
   st('stat-ytd-total',fmtINR(totals.reduce(function(a,b){return a+b;},0)));
   st('stat-monthly-avg',fmtINR(avg));
-  st('stat-latest',data[0]?fmtINR(data[0].spend):'—');
+  st('stat-latest',raw[0]?fmtINR(raw[0].spend):'—');
 }
 async function saveStatMonthly(){
   var month=$v('sm-month'),spend=$n('sm-spend'),items=$n('sm-items'),vsAvg=$v('sm-vsavg');
@@ -2829,24 +3000,36 @@ function renderEmployeeAssetMatrix(){
       '<div class="em-count">'+e.count+'</div></div>';
   }).join('');
 }
+var _assetIds=[]; var _astFilter=null; var _astSearch='';
 function renderAssets(filterType, searchText){
   renderEmployeeAssetMatrix();
   var tb=$id('assets-tbody'); if(!tb) return;
   if(FETCH_FAILED && FETCH_FAILED['assets']){
-    tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Assets failed to load. Check your connection and refresh.</td></tr>';
+    tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Assets failed to load. Check your connection and refresh.</td></tr>';
     st('assets-total-val','—'); st('assets-alloc-val','—'); st('assets-avail-val','—'); st('assets-repair-val','—'); st('assets-records-total-val','—'); return;
   }
+  if(filterType!==undefined) _astFilter=filterType;
+  if(searchText!==undefined) _astSearch=searchText;
   var all=load(DB.assets);
-  var data=(!filterType||filterType==='All')?all:all.filter(function(r){return r.type===filterType;});
-  if(searchText){
-    var sq=searchText.toLowerCase();
+  var data=(!_astFilter||_astFilter==='All')?all:all.filter(function(r){return r.type===_astFilter;});
+  if(_astSearch){
+    var sq=_astSearch.toLowerCase();
     data=data.filter(function(r){ return ((r.model||'')+' '+(r.id||'')+' '+(r.serial||'')+' '+(r.emp||'')).toLowerCase().indexOf(sq)>-1; });
   }
+  data = dtProcess('assets', data, ['id','model','serial','emp']);
+  _assetIds = data.map(function(r){ return r.id; });
+  var tbEl=$id('assets-toolbar'); if(tbEl) tbEl.innerHTML = dtToolbarHTML('assets',{placeholder:'Search assets…',count:data.length,renderFnName:'function(){renderAssets(_astFilter,_astSearch)}',onExport:"dtExportCSV(dtProcess('assets',load(DB.assets),['id','model','serial','emp']),[{key:'id',label:'Asset ID'},{key:'type',label:'Type'},{key:'model',label:'Brand/Model'},{key:'serial',label:'Serial'},{key:'emp',label:'Allocated To'},{key:'status',label:'Status'}],'assets-register')"});
+  var bbEl=$id('assets-bulkbar'); if(bbEl) bbEl.innerHTML = dtBulkbarHTML('assets',{onBulkDelete:"dtBulkDelete('assets','assets',function(){renderAssets(_astFilter,_astSearch);calcDashboard();},'asset')"});
+  dtPaintSortHeaders('assets-thead','assets');
+  dtUpdateBulkbar('assets');
   var tcls={Laptop:'bb','Desktop PC':'bgo',Mobile:'bp',Tablet:'bb',Monitor:'bg',Other:'bgy'};
   var sbdg={Active:'bg',Available:'bb',Repair:'br',Retired:'bgy'};
   paginatedRender('assets-tbody', data, function(r){
     var empH=r.emp?'<div class="flex-gap"><div class="av" style="background:rgba(184,147,90,0.13);color:var(--gold)">'+esc(r.emp.slice(0,2).toUpperCase())+'</div>'+esc(r.emp)+'</div>':'<span class="muted">— Unallocated —</span>';
-    return '<tr>'+
+    var sel=!!dtGet('assets').selected[r.id];
+    var histBtn='<button class="btn btn-ghost btn-sm" title="View allocation &amp; status history" onclick="openAssetHistory(\''+r.id+'\',\''+esc(r.model)+'\')">History</button>';
+    return '<tr class="'+(sel?'dt-row-sel':'')+'">'+
+      '<td class="dt-check"><input type="checkbox" '+(sel?'checked':'')+' onchange="dtToggleRow(\'assets\',\''+r.id+'\',this)"></td>'+
       '<td class="mono gold-text">'+esc(r.id)+'</td>'+
       '<td><span class="badge '+(tcls[r.type]||'bgy')+'">'+esc(r.type)+'</span></td>'+
       '<td>'+esc(r.model)+'</td><td class="mono">'+esc(r.serial)+'</td>'+
@@ -2854,7 +3037,7 @@ function renderAssets(filterType, searchText){
       '<td>'+(r.pass?'<span class="secret">'+esc(r.pass)+'</span>':'—')+'</td>'+
       '<td>'+(r.rec?'<span class="secret">'+esc(r.rec)+'</span>':'—')+'</td>'+
       '<td><span class="badge '+(sbdg[r.status]||'bgy')+'">'+esc(r.status)+'</span></td>'+
-      '<td>'+actionBtns("editAST('"+r.id+"')","confirmDel('"+r.id+"','assets',function(){renderAssets();calcDashboard();},'Asset deleted')")+'</td></tr>';
+      '<td>'+actionBtns("editAST('"+r.id+"')","confirmDel('"+r.id+"','assets',function(){renderAssets();calcDashboard();},'Asset deleted')",histBtn)+'</td></tr>';
   });
   // Active allocation records = assets currently Active AND assigned to a named employee.
   // Returned/inactive/retired/unassigned assets are excluded by this same filter.
@@ -2874,6 +3057,31 @@ function filterAssets(type,el){
   document.querySelectorAll('#asset-tabs .tab').forEach(function(t){t.classList.remove('active');});
   if(el) el.classList.add('active'); renderAssets(type);
 }
+// ── ASSET HISTORY / PREVIOUS-OWNER TRACKING ──────────
+// No new table needed: reuses the existing activity_log table. Every allocation
+// or status change on an asset is logged with the asset's own ID inside the
+// activity text, so history is just "give me every log line mentioning this ID",
+// queried live from Supabase (not the capped 50-row in-memory cache) so nothing
+// is ever missed no matter how old.
+async function openAssetHistory(id, label){
+  openModal('m-asset-history');
+  $id('ah-asset-label').textContent = label ? '· '+label : '';
+  var body=$id('ah-body'); body.innerHTML='<div class="ah-empty">Loading…</div>';
+  var rows=[];
+  try{
+    var res = await sb.from(TBL.activityLog).select().eq('module','Assets').ilike('activity','%'+id+'%').order('created_at',{ascending:false}).limit(200);
+    if(res.error) throw res.error;
+    rows = (res.data||[]).map(function(r){ return adaptFromDb('activityLog', r); });
+  }catch(e){
+    // Fall back to whatever is already in memory if the live query fails (e.g. offline)
+    rows = load(DB.activityLog).filter(function(r){ return r.module==='Assets' && r.activity && r.activity.indexOf(id)>-1; });
+  }
+  if(!rows.length){ body.innerHTML='<div class="ah-empty">No history yet for this asset — changes to allocation or status will appear here.</div>'; return; }
+  body.innerHTML = rows.map(function(r){
+    return '<div class="ah-item"><div class="ah-txt">'+esc(r.activity)+'</div>'+
+      '<div class="ah-meta">'+esc(r.date||'')+' · '+esc(r.by||'Admin')+'</div></div>';
+  }).join('');
+}
 async function saveAsset(){
   var id=aid($v('ast-id')),type=$v('ast-type'),model=$v('ast-model'),serial=$v('ast-serial');
   var date=$v('ast-date'),emp=$v('ast-emp'),pass=$v('ast-pass'),rec=$v('ast-rec'),notes=$v('ast-notes'),status=$v('ast-status');
@@ -2885,13 +3093,29 @@ async function saveAsset(){
     var serialDupe = existing.find(function(r){ return r.serial && r.serial.toLowerCase()===serial.toLowerCase().trim() && r.id!==_eid; });
     if(serialDupe){ toast('Serial number "'+serial+'" is already registered under "'+serialDupe.model+'"','error'); return; }
   }
+  // Snapshot the previous state (if editing) BEFORE overwriting, so we can log
+  // exactly what changed — this is what powers the Asset History timeline / previous-owner tracking.
+  var before = _eid ? existing.find(function(r){ return r.id===_eid; }) : null;
   var obj={ id:_eid||id, type:type, model:model, serial:serial, date:date||null, emp:emp, pass:pass, rec:rec, notes:notes, status:status };
   var btn=event&&event.target; setBtnLoading(btn,true);
   try{
     var saved = _eid ? await dbUpdate('assets', _eid, obj) : await dbInsert('assets', obj, 'AST');
     cacheUpsert('assets', saved);
     renderAssets(); calcDashboard();
-    logAct('Asset saved: '+model+' ('+(saved.id)+')','Assets'); closeModal('m-add-asset'); toast('Asset saved');
+    var aidLabel=saved.id;
+    if(!before){
+      logAct(aidLabel+' registered ('+model+')'+(emp?' — allocated to '+emp:' — unallocated, in storage'),'Assets');
+    } else {
+      var beforeOwner=(before.emp||'').trim(), afterOwner=(emp||'').trim();
+      if(beforeOwner!==afterOwner){
+        if(!beforeOwner && afterOwner) logAct(aidLabel+' allocated to '+afterOwner,'Assets');
+        else if(beforeOwner && !afterOwner) logAct(aidLabel+' returned by '+beforeOwner+' — now unallocated','Assets');
+        else logAct(aidLabel+' reassigned: '+beforeOwner+' → '+afterOwner,'Assets');
+      }
+      if(before.status!==status) logAct(aidLabel+' status changed: '+before.status+' → '+status,'Assets');
+      if(beforeOwner===afterOwner && before.status===status) logAct(aidLabel+' details updated ('+model+')','Assets');
+    }
+    closeModal('m-add-asset'); toast('Asset saved');
   }catch(err){ toast('Save failed: '+(err&&err.message?err.message:'unknown error'),'error'); }
   finally{ setBtnLoading(btn,false,'Register Asset'); }
 }
@@ -2916,26 +3140,35 @@ function switchInv(tab,el){
     var d=$id('inv-'+t); if(d) d.style.display=t===tab?'block':'none';
   });
 }
+var _invPkgIds=[];
 function renderInvPackaging(){
-  var data=load(DB.invPackaging);
+  var raw=load(DB.invPackaging);
   var tb=$id('inv-pkg-tbody'); if(!tb) return;
   if(FETCH_FAILED && FETCH_FAILED['invPackaging']){
-    tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Packaging Inventory failed to load. Check your connection and refresh.</td></tr>';
+    tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Packaging Inventory failed to load. Check your connection and refresh.</td></tr>';
     st('inv-p-count','—'); return;
   }
+  var data = dtProcess('inv-pkg', raw, ['item','size']);
+  _invPkgIds = data.map(function(r){ return r.id; });
+  var tbEl=$id('inv-pkg-toolbar'); if(tbEl) tbEl.innerHTML = dtToolbarHTML('inv-pkg',{placeholder:'Search packaging…',count:data.length,renderFnName:'renderInvPackaging',onExport:"dtExportCSV(dtProcess('inv-pkg',load(DB.invPackaging),['item','size']),[{key:'item',label:'Item'},{key:'size',label:'Size'},{key:'qty',label:'Qty'},{key:'cost',label:'Cost'},{key:'reorder',label:'Reorder'}],'packaging-inventory')"});
+  var bbEl=$id('inv-pkg-bulkbar'); if(bbEl) bbEl.innerHTML = dtBulkbarHTML('inv-pkg',{onBulkDelete:"dtBulkDelete('inv-pkg','invPackaging',renderInvPackaging,'item')"});
+  dtPaintSortHeaders('inv-pkg-thead','inv-pkg');
+  dtUpdateBulkbar('inv-pkg');
   paginatedRender('inv-pkg-tbody', data, function(r){
     var low=Number(r.qty)<=Number(r.reorder);
-    return '<tr>'+
+    var sel=!!dtGet('inv-pkg').selected[r.id];
+    return '<tr class="'+(sel?'dt-row-sel':'')+'">'+
+      '<td class="dt-check"><input type="checkbox" '+(sel?'checked':'')+' onchange="dtToggleRow(\'inv-pkg\',\''+r.id+'\',this)"></td>'+
       '<td class="strong">'+esc(r.item)+'</td><td>'+esc(r.size)+'</td>'+
       '<td>'+r.qty+'</td><td>'+fmtINR(r.cost)+'</td><td>'+r.reorder+'</td>'+
       '<td><span class="badge '+(low?'br':'bg')+'">'+(low?'Low':'Good')+'</span></td>'+
       '<td>'+actionBtns("editPKG('"+r.id+"')","confirmDel('"+r.id+"','invPackaging',renderInvPackaging,'Item deleted')")+'</td></tr>';
   });
-  st('inv-p-count',data.reduce(function(s,r){return s+Number(r.qty||0);},0));
-  var lowP=data.filter(function(r){return Number(r.qty)<=Number(r.reorder);}).length;
+  st('inv-p-count',raw.reduce(function(s,r){return s+Number(r.qty||0);},0));
+  var lowP=raw.filter(function(r){return Number(r.qty)<=Number(r.reorder);}).length;
   var lowM=load(DB.invMarketing).filter(function(r){return Number(r.qty)<=Number(r.reorder);}).length;
   st('inv-low-count',lowP+lowM);
-  var totalCombined=(data.reduce(function(s,r){return s+Number(r.qty||0);},0))+(load(DB.invMarketing).reduce(function(s,r){return s+Number(r.qty||0);},0));
+  var totalCombined=(raw.reduce(function(s,r){return s+Number(r.qty||0);},0))+(load(DB.invMarketing).reduce(function(s,r){return s+Number(r.qty||0);},0));
   st('dash-inv-total2',totalCombined.toLocaleString('en-IN'));
 }
 async function saveInvPkg(){
@@ -2955,22 +3188,31 @@ function editPKG(id){
   _eid=id; sv('pkg-item',r.item); sv('pkg-size',r.size); sv('pkg-qty',r.qty); sv('pkg-cost',r.cost); sv('pkg-reorder',r.reorder);
   st('mt-pkg','Edit Packaging Item'); openModal('m-add-pkg');
 }
+var _invMktIds=[];
 function renderInvMarketing(){
-  var data=load(DB.invMarketing);
+  var raw=load(DB.invMarketing);
   var tb=$id('inv-mkt-tbody'); if(!tb) return;
   if(FETCH_FAILED && FETCH_FAILED['invMarketing']){
-    tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Marketing Inventory failed to load. Check your connection and refresh.</td></tr>';
+    tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Marketing Inventory failed to load. Check your connection and refresh.</td></tr>';
     st('inv-m-count','—'); return;
   }
+  var data = dtProcess('inv-mkt', raw, ['item','size']);
+  _invMktIds = data.map(function(r){ return r.id; });
+  var tbEl=$id('inv-mkt-toolbar'); if(tbEl) tbEl.innerHTML = dtToolbarHTML('inv-mkt',{placeholder:'Search marketing…',count:data.length,renderFnName:'renderInvMarketing',onExport:"dtExportCSV(dtProcess('inv-mkt',load(DB.invMarketing),['item','size']),[{key:'item',label:'Item'},{key:'size',label:'Size'},{key:'qty',label:'Qty'},{key:'cost',label:'Cost'},{key:'reorder',label:'Reorder'}],'marketing-inventory')"});
+  var bbEl=$id('inv-mkt-bulkbar'); if(bbEl) bbEl.innerHTML = dtBulkbarHTML('inv-mkt',{onBulkDelete:"dtBulkDelete('inv-mkt','invMarketing',renderInvMarketing,'item')"});
+  dtPaintSortHeaders('inv-mkt-thead','inv-mkt');
+  dtUpdateBulkbar('inv-mkt');
   paginatedRender('inv-mkt-tbody', data, function(r){
     var low=Number(r.qty)<=Number(r.reorder);
-    return '<tr>'+
+    var sel=!!dtGet('inv-mkt').selected[r.id];
+    return '<tr class="'+(sel?'dt-row-sel':'')+'">'+
+      '<td class="dt-check"><input type="checkbox" '+(sel?'checked':'')+' onchange="dtToggleRow(\'inv-mkt\',\''+r.id+'\',this)"></td>'+
       '<td class="strong">'+esc(r.item)+'</td><td>'+esc(r.size)+'</td>'+
       '<td>'+r.qty+'</td><td>'+fmtINR(r.cost)+'</td><td>'+r.reorder+'</td>'+
       '<td><span class="badge '+(low?'br':'bg')+'">'+(low?'Low':'Good')+'</span></td>'+
       '<td>'+actionBtns("editMKT('"+r.id+"')","confirmDel('"+r.id+"','invMarketing',renderInvMarketing,'Item deleted')")+'</td></tr>';
   });
-  st('inv-m-count',data.reduce(function(s,r){return s+Number(r.qty||0);},0));
+  st('inv-m-count',raw.reduce(function(s,r){return s+Number(r.qty||0);},0));
 }
 async function saveInvMkt(){
   var item=$v('mkt-item'),size=$v('mkt-size'),qty=$n('mkt-qty'),cost=$n('mkt-cost'),reorder=$n('mkt-reorder')||50;
@@ -3049,20 +3291,30 @@ function editVEN(id){
 }
 
 // ── CREDENTIALS (gated: requires sign-in per RLS) ────
+var _credIds=[]; var _credFilter='All';
 function renderCredentials(filter,tabEl){
-  if(!filter || filter===undefined) filter='All';
+  if(!filter || filter===undefined) filter=_credFilter||'All';
+  _credFilter=filter;
   if(tabEl){ document.querySelectorAll('#cred-tabs .tab').forEach(function(t){t.classList.remove('active');}); tabEl.classList.add('active'); }
   var tb=$id('cred-tbody'); if(!tb) return;
   if(FETCH_FAILED && FETCH_FAILED['credentials']){
-    tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Credentials Vault failed to load. Check your connection and refresh.</td></tr>';
+    tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--danger,#e74c3c);padding:20px 0;">⚠️ Credentials Vault failed to load. Check your connection and refresh.</td></tr>';
     return;
   }
   var data=load(DB.credentials);
   var filtered=filter==='All'?data:data.filter(function(r){return r.cat===filter;});
+  filtered = dtProcess('cred', filtered, ['platform','user','cat']);
+  _credIds = filtered.map(function(r){ return r.id; });
+  var tbEl=$id('cred-toolbar'); if(tbEl) tbEl.innerHTML = dtToolbarHTML('cred',{placeholder:'Search credentials…',count:filtered.length,renderFnName:"function(){renderCredentials(_credFilter)}",onExport:"dtExportCSV(dtProcess('cred',(_credFilter==='All'?load(DB.credentials):load(DB.credentials).filter(function(r){return r.cat===_credFilter;})),['platform','user','cat']),[{key:'platform',label:'Platform'},{key:'cat',label:'Category'},{key:'user',label:'Username'},{key:'twofa',label:'2FA'},{key:'updated',label:'Updated'}],'credentials')"});
+  var bbEl=$id('cred-bulkbar'); if(bbEl) bbEl.innerHTML = dtBulkbarHTML('cred',{onBulkDelete:"dtBulkDelete('cred','credentials',function(){renderCredentials(_credFilter)},'credential')"});
+  dtPaintSortHeaders('cred-thead','cred');
+  dtUpdateBulkbar('cred');
   var cm={'Social Media':'bb',Banking:'bgo',Software:'bp','E-Commerce':'bp',Other:'bgy'};
   var tm={Enabled:'bg',Disabled:'bgo',OTP:'bg'};
   tb.innerHTML=filtered.map(function(r){
-    return '<tr>'+
+    var sel=!!dtGet('cred').selected[r.id];
+    return '<tr class="'+(sel?'dt-row-sel':'')+'">'+
+      '<td class="dt-check"><input type="checkbox" '+(sel?'checked':'')+' onchange="dtToggleRow(\'cred\',\''+r.id+'\',this)"></td>'+
       '<td>'+esc(r.platform)+'</td>'+
       '<td><span class="badge '+(cm[r.cat]||'bgy')+'">'+esc(r.cat)+'</span></td>'+
       '<td class="mono">'+esc(r.user)+'</td>'+
@@ -3070,8 +3322,8 @@ function renderCredentials(filter,tabEl){
       '<td><span class="badge '+(tm[r.twofa]||'bgy')+'">'+esc(r.twofa)+'</span></td>'+
       '<td>'+(r.rec?'<span class="secret">'+esc(r.rec)+'</span>':'—')+'</td>'+
       '<td class="muted">'+esc(r.updated)+'</td>'+
-      '<td>'+actionBtns("editCRED('"+r.id+"')","confirmDel('"+r.id+"','credentials',function(){renderCredentials();},'Credential deleted')")+'</td></tr>';
-  }).join('');
+      '<td>'+actionBtns("editCRED('"+r.id+"')","confirmDel('"+r.id+"','credentials',function(){renderCredentials(_credFilter);},'Credential deleted')")+'</td></tr>';
+  }).join('') || '<tr><td colspan="9"><div class="tbl-empty"><div class="ee-icon">◇</div><div class="ee-title">No credentials found</div><div class="ee-sub">Try adjusting search or filters.</div></div></td></tr>';
 }
 async function saveCredential(){
   var platform=$v('cr-platform'),cat=$v('cr-cat'),user=$v('cr-user'),pass=$v('cr-pass'),twofa=$v('cr-twofa'),rec=$v('cr-rec');
@@ -3118,6 +3370,7 @@ function dvPopulateFilters(){
     locSel.value=curLoc;
   }
 }
+var _dvIds=[]; var _dvLastFiltered=[];
 function renderDocVault(){
   var data=load(DB.documentVault);
   if(FETCH_FAILED && FETCH_FAILED['documentVault']){
@@ -3135,10 +3388,18 @@ function renderDocVault(){
     if(q&&(r.name+' '+r.cat+' '+r.loc+' '+(r.ref||'')).toLowerCase().indexOf(q)===-1) return false;
     return true;
   });
+  filtered = dtProcess('dv', filtered, []); // search already applied above; this just applies sort
+  _dvLastFiltered = filtered;
+  _dvIds = filtered.map(function(r){ return r.id; });
   if(!$id('dv-tbody')) return;
+  var bbEl=$id('dv-bulkbar'); if(bbEl) bbEl.innerHTML = dtBulkbarHTML('dv',{onBulkDelete:"dtBulkDelete('dv','documentVault',function(){renderDocVault();calcDashboard();},'document')"});
+  dtPaintSortHeaders('dv-thead','dv');
+  dtUpdateBulkbar('dv');
   var sbdg={Available:'bg',Issued:'bgo',Archived:'bb',Missing:'br'};
   paginatedRender('dv-tbody', filtered, function(r){
-    return '<tr>'+
+    var sel=!!dtGet('dv').selected[r.id];
+    return '<tr class="'+(sel?'dt-row-sel':'')+'">'+
+      '<td class="dt-check"><input type="checkbox" '+(sel?'checked':'')+' onchange="dtToggleRow(\'dv\',\''+r.id+'\',this)"></td>'+
       '<td class="strong">'+esc(r.name)+'</td>'+
       '<td><span class="otag">'+esc(r.cat)+'</span></td>'+
       '<td class="mono">'+esc(r.ref||'—')+'</td>'+
@@ -3234,6 +3495,146 @@ function debounceSearch(key, fn, delay){
 // ══════════════════════════════════════════════════════
 var PAGE_SIZE = 100; // rows per page for large tables
 var _pageOffsets = {}; // keyed by table id
+
+// ═══════════════════════════════════════════════════════
+// DATA TABLE ENGINE — reusable search/sort/select/export
+// Attaches to any table without touching its render function's
+// data source; call dtProcess() inside the render fn before
+// paginatedRender() to get filtering + sorting for free.
+// ═══════════════════════════════════════════════════════
+var DT_STATE = {}; // keyed by table id -> {search, sortKey, sortDir, selected:Set}
+function dtGet(tableId){
+  if(!DT_STATE[tableId]) DT_STATE[tableId] = {search:'', sortKey:null, sortDir:1, selected:{}};
+  return DT_STATE[tableId];
+}
+// Filters rows by fuzzy-matching `searchKeys` fields, then sorts by active sort column.
+function dtProcess(tableId, rows, searchKeys){
+  var st = dtGet(tableId);
+  var out = rows;
+  if(st.search && st.search.trim()){
+    out = out.filter(function(r){
+      var hay = searchKeys.map(function(k){ return r[k]!=null? String(r[k]) : ''; }).join(' ');
+      return fuzzyMatch(hay, st.search);
+    });
+  }
+  if(st.sortKey){
+    var key = st.sortKey, dir = st.sortDir;
+    out = out.slice().sort(function(a,b){
+      var av=a[key], bv=b[key];
+      var an=Number(av), bn=Number(bv);
+      var cmp;
+      if(!isNaN(an) && !isNaN(bn) && av!=='' && bv!==''){ cmp = an - bn; }
+      else { cmp = String(av||'').localeCompare(String(bv||'')); }
+      return cmp*dir;
+    });
+  }
+  return out;
+}
+// Toggle sort direction/column then re-render via the given render function.
+function dtSort(tableId, key, renderFn){
+  var st = dtGet(tableId);
+  if(st.sortKey===key) st.sortDir = -st.sortDir; else { st.sortKey=key; st.sortDir=1; }
+  renderFn();
+}
+// Reflects active sort column on <th> elements (call after building thead, or use static thead + call once).
+function dtPaintSortHeaders(theadId, tableId){
+  var thead = $id(theadId); if(!thead) return;
+  var st = dtGet(tableId);
+  thead.querySelectorAll('th.dt-sortable').forEach(function(th){
+    th.classList.toggle('dt-sort-active', th.getAttribute('data-key')===st.sortKey);
+    var arrow = th.querySelector('.dt-arrow');
+    if(arrow) arrow.textContent = (th.getAttribute('data-key')===st.sortKey) ? (st.sortDir===1?'▲':'▼') : '▲';
+  });
+}
+function dtSearchInput(tableId, val, renderFn){
+  dtGet(tableId).search = val;
+  debounceSearch('dt_'+tableId, renderFn, 150);
+}
+function dtToggleRow(tableId, id, checkboxEl){
+  var st = dtGet(tableId);
+  if(checkboxEl.checked) st.selected[id]=true; else delete st.selected[id];
+  dtUpdateBulkbar(tableId);
+  var row = checkboxEl.closest('tr'); if(row) row.classList.toggle('dt-row-sel', checkboxEl.checked);
+}
+function dtToggleAll(tableId, ids, checkboxEl){
+  var st = dtGet(tableId);
+  if(checkboxEl.checked) ids.forEach(function(id){ st.selected[id]=true; });
+  else ids.forEach(function(id){ delete st.selected[id]; });
+  var tb = checkboxEl.closest('table');
+  if(tb) tb.querySelectorAll('tbody input[type=checkbox]').forEach(function(cb){ cb.checked=checkboxEl.checked; cb.closest('tr').classList.toggle('dt-row-sel', checkboxEl.checked); });
+  dtUpdateBulkbar(tableId);
+}
+function dtSelectedIds(tableId){ return Object.keys(dtGet(tableId).selected); }
+function dtClearSelection(tableId){ dtGet(tableId).selected = {}; dtUpdateBulkbar(tableId); }
+function dtUpdateBulkbar(tableId){
+  var bar = $id('dt-bulk-'+tableId); if(!bar) return;
+  var n = dtSelectedIds(tableId).length;
+  bar.classList.toggle('show', n>0);
+  var countEl = bar.querySelector('.dt-bulk-count'); if(countEl) countEl.textContent = n;
+}
+// Bulk-deletes selected rows from a DB key (array of records with .id), moving each to
+// the Recycle Bin exactly like the single-row delete path (confirmDel), then re-renders.
+async function dtBulkDelete(tableId, dbKey, renderFn, label){
+  var ids = dtSelectedIds(tableId);
+  if(!ids.length) return;
+  openModal('m-confirm');
+  var titleEl = $id('confirm-title'); if(titleEl) titleEl.textContent = 'Delete '+ids.length+' '+(label||'item')+(ids.length>1?'s':'')+'?';
+  $id('confirm-yes-btn').onclick = async function(){
+    var btn=$id('confirm-yes-btn'); setBtnLoading(btn,true);
+    var all = load(dbKey);
+    var ok=0;
+    for(var i=0;i<ids.length;i++){
+      var item = all.find(function(r){ return r.id===ids[i]; });
+      if(!item) continue;
+      try{
+        await moveToRecycleBin(dbKey, item);
+        await dbDeleteByDisplayId(dbKey, ids[i]);
+        cacheRemoveByDisplayId(dbKey, ids[i]);
+        ok++;
+      }catch(e){}
+    }
+    dtClearSelection(tableId);
+    renderFn(); calcDashboard(); closeModal('m-confirm'); setBtnLoading(btn,false,'Delete');
+    toast(ok+' '+(label||'item')+(ok===1?'':'s')+' moved to Recycle Bin');
+  };
+}
+// Exports rows to a CSV file. columns = [{key:'item',label:'Item'}, ...]
+function dtExportCSV(rows, columns, filename){
+  if(!rows.length){ toast('Nothing to export','error'); return; }
+  var lines = [columns.map(function(c){ return '"'+c.label.replace(/"/g,'""')+'"'; }).join(',')];
+  rows.forEach(function(r){
+    lines.push(columns.map(function(c){
+      var v = r[c.key]; if(v==null) v='';
+      return '"'+String(v).replace(/"/g,'""')+'"';
+    }).join(','));
+  });
+  var blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download=(filename||'export')+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Exported '+rows.length+' rows');
+}
+// Builds the toolbar HTML: search box + live count + export button (+ optional extra buttons).
+function dtToolbarHTML(tableId, opts){
+  opts = opts || {};
+  var st = dtGet(tableId);
+  return '<div class="dt-toolbar">'+
+    '<div class="dt-search"><input type="text" placeholder="'+(opts.placeholder||'Search…')+'" value="'+esc(st.search)+'" oninput="dtSearchInput(\''+tableId+'\',this.value,'+opts.renderFnName+')"></div>'+
+    '<span class="dt-count">'+(opts.count!=null?opts.count+' record'+(opts.count===1?'':'s'):'')+'</span>'+
+    '<div class="dt-toolbar-actions">'+
+      (opts.onExport? '<button class="dt-btn" onclick="'+opts.onExport+'">⇩ Export CSV</button>':'')+
+    '</div></div>';
+}
+// Builds the bulk-action bar HTML (hidden until a row is selected).
+function dtBulkbarHTML(tableId, opts){
+  opts = opts || {};
+  return '<div class="dt-bulkbar" id="dt-bulk-'+tableId+'">'+
+    '<span><strong class="dt-bulk-count">0</strong> selected</span>'+
+    '<button class="dt-btn" onclick="dtClearSelection(\''+tableId+'\')">Clear</button>'+
+    (opts.onBulkDelete? '<button class="dt-btn danger" onclick="'+opts.onBulkDelete+'">Delete selected</button>':'')+
+  '</div>';
+}
 
 function paginatedRender(tbodyId, rows, rowHtmlFn, counterId){
   var tb = $id(tbodyId); if(!tb) return;
