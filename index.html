@@ -190,6 +190,14 @@ table{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:'tnum'
 
 /* ── LAYER 3 — KPI CARDS ─────────────────────────────── */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:28px}
+@keyframes stat-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.stats-row .stat,.health-grid .health-card{animation:stat-rise 0.5s var(--ease-out) both}
+.stats-row .stat:nth-child(1),.health-grid .health-card:nth-child(1){animation-delay:0.02s}
+.stats-row .stat:nth-child(2),.health-grid .health-card:nth-child(2){animation-delay:0.08s}
+.stats-row .stat:nth-child(3),.health-grid .health-card:nth-child(3){animation-delay:0.14s}
+.stats-row .stat:nth-child(4),.health-grid .health-card:nth-child(4){animation-delay:0.20s}
+.health-grid .health-card:nth-child(5){animation-delay:0.26s}
+@media(prefers-reduced-motion:reduce){.stats-row .stat,.health-grid .health-card{animation:none}}
 .stat{
   background:var(--glass-bg);border:1px solid var(--glass-border);
   border-radius:var(--r);padding:24px 26px;
@@ -348,8 +356,8 @@ textarea.finput{resize:vertical;min-height:72px}
   background:var(--glass-bg);border:1px solid var(--glass-border);
   border-radius:20px;padding:30px;width:560px;max-width:94vw;max-height:90vh;
   overflow-y:auto;position:relative;box-shadow:var(--s4);
-  backdrop-filter:blur(var(--glass-blur));
 }
+.modal{background:rgba(255,255,255,0.97)}
 .dark .modal{background:rgba(10,18,32,0.92)}
 .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold3),var(--gold),transparent);border-radius:20px 20px 0 0}
 .modal-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;color:var(--ink);margin-bottom:22px;padding-right:32px}
@@ -403,8 +411,9 @@ textarea.finput{resize:vertical;min-height:72px}
 .loc-stat .loc-name{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;font-weight:600}
 .loc-stat .loc-count{font-size:22px;font-weight:700;color:var(--ink);font-family:'Playfair Display',serif}
 .dark .loc-stat .loc-count{color:var(--gold3)}
-.emp-matrix-item{background:rgba(196,163,86,0.04);border:1px solid var(--border);border-radius:var(--r3);padding:13px 15px;display:flex;align-items:center;gap:10px;transition:all var(--t2)}
-.emp-matrix-item:hover{border-color:var(--border2);background:rgba(196,163,86,0.07);transform:translateY(-2px)}
+.emp-matrix-item{background:rgba(196,163,86,0.04);border:1px solid var(--border);border-radius:var(--r3);padding:13px 15px;display:flex;align-items:center;gap:10px;transition:all var(--t2);cursor:pointer}
+.emp-matrix-item:hover{border-color:var(--border2);background:rgba(196,163,86,0.07);transform:translateY(-2px);box-shadow:var(--s2)}
+#emp-matrix-toggle .seg-btn.active{background:linear-gradient(135deg,var(--gold),var(--goldmuted));color:var(--ink)}
 .emp-matrix-item .em-rank{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--goldmuted));color:var(--ink);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .emp-matrix-item .em-name{font-size:12.5px;font-weight:600;color:var(--text)}
 .emp-matrix-item .em-cats{font-size:10.5px;color:var(--text3);margin-top:2px}
@@ -994,7 +1003,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="hero-scan"></div>
       <div class="hero-inner">
         <div class="hero-text">
-          <h2>Welcome, <em>Admin</em> — Your empire awaits.</h2>
+          <h2 id="hero-greeting">Good day — here's today's overview.</h2>
           <p id="hero-date">JEWELNME PRIVATE LIMITED · ADMIN NEXUS ERP v8</p>
         </div>
         <div class="hero-stats">
@@ -1058,7 +1067,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div class="stat gold"><div class="stat-lbl">Pantry Monthly Avg</div><div class="stat-val" id="dash-pantry-avg">—</div><div class="stat-change neutral">Live data</div><div class="sparkrow" id="sp1"></div></div>
       <div class="stat green"><div class="stat-lbl">Stationery Monthly Avg</div><div class="stat-val" id="dash-stat-avg">—</div><div class="stat-change neutral">Live data</div><div class="sparkrow" id="sp2"></div></div>
       <div class="stat blue"><div class="stat-lbl">Total Assets</div><div class="stat-val" id="dash-assets-total">—</div><div class="stat-change neutral">Registered</div><div class="sparkrow" id="sp3"></div></div>
-      <div class="stat red"><div class="stat-lbl">Inventory Items</div><div class="stat-val" id="dash-inv-total">—</div><div class="stat-change up">Packaging &amp; Marketing</div><div class="sparkrow" id="sp4"></div></div>
+      <div class="stat red"><div class="stat-lbl">Inventory Items</div><div class="stat-val" id="dash-inv-total">—</div><div class="stat-change neutral">Packaging &amp; Marketing</div><div class="sparkrow" id="sp4"></div></div>
     </div>
     <div class="g2">
       <div class="card">
@@ -1100,7 +1109,7 @@ textarea.finput{resize:vertical;min-height:72px}
     </div>
     <div class="g2 mb20">
       <div class="card">
-        <div class="card-header"><div class="card-title"><span>Usable</span> Materials</div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-pantry')">Add Item</button></div>
+        <div class="card-header"><div class="card-title"><span>Usable</span> Materials</div><button class="btn btn-primary btn-sm" onclick="openNewModal('m-add-pantry')">Add Item</button></div>
         <div id="pu-toolbar"></div>
         <div id="pu-bulkbar"></div>
         <div class="tbl-wrap"><table>
@@ -1115,7 +1124,7 @@ textarea.finput{resize:vertical;min-height:72px}
         </table></div>
       </div>
       <div class="card">
-        <div class="card-header"><div class="card-title"><span>Fixed</span> Materials</div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-fixed')">Add Item</button></div>
+        <div class="card-header"><div class="card-title"><span>Fixed</span> Materials</div><button class="btn btn-primary btn-sm" onclick="openNewModal('m-add-fixed')">Add Item</button></div>
         <div id="pf-toolbar"></div>
         <div id="pf-bulkbar"></div>
         <div class="tbl-wrap"><table>
@@ -1131,7 +1140,7 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-title">Month-wise <span>Expense Record</span></div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-month')">Add Entry</button></div>
+      <div class="card-header"><div class="card-title">Month-wise <span>Expense Record</span></div><button class="btn btn-primary btn-sm" onclick="openNewModal('m-add-month')">Add Entry</button></div>
       <div id="pm-toolbar"></div>
       <div id="pm-bulkbar"></div>
       <div class="tbl-wrap"><table>
@@ -1161,7 +1170,7 @@ textarea.finput{resize:vertical;min-height:72px}
     <div class="alert alert-danger" id="stat-low-alert" style="display:none"><strong>Low Stock Alert:</strong>&nbsp;<span id="stat-low-items"></span></div>
     <div class="g2">
       <div class="card">
-        <div class="card-header"><div class="card-title"><span>Current</span> Stock</div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-stat')">Add Item</button></div>
+        <div class="card-header"><div class="card-title"><span>Current</span> Stock</div><button class="btn btn-primary btn-sm" onclick="openNewModal('m-add-stat')">Add Item</button></div>
         <div id="ss-toolbar"></div>
         <div id="ss-bulkbar"></div>
         <div class="tbl-wrap"><table>
@@ -1175,7 +1184,7 @@ textarea.finput{resize:vertical;min-height:72px}
         </table></div>
       </div>
       <div class="card">
-        <div class="card-header"><div class="card-title">Monthly <span>Expense Log</span></div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-stat-month')">Add Entry</button></div>
+        <div class="card-header"><div class="card-title">Monthly <span>Expense Log</span></div><button class="btn btn-primary btn-sm" onclick="openNewModal('m-add-stat-month')">Add Entry</button></div>
         <div id="sm-toolbar"></div>
         <div id="sm-bulkbar"></div>
         <div class="tbl-wrap"><table>
@@ -1217,7 +1226,15 @@ textarea.finput{resize:vertical;min-height:72px}
       </div>
     </div>
     <div class="card" id="emp-matrix-card" style="margin-bottom:18px">
-      <div class="card-header"><div class="card-title">Employee <span>Asset Matrix</span></div><div class="muted" style="font-size:11px">Most-assigned employees, by category</div></div>
+      <div class="card-header"><div class="card-title">Employee <span>Asset Matrix</span></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="muted" style="font-size:11px" id="emp-matrix-sub">Most-assigned employees, by category</div>
+          <div class="seg" id="emp-matrix-toggle" style="display:flex;gap:4px;background:rgba(196,163,86,0.05);border:1px solid var(--border);border-radius:8px;padding:3px">
+            <button type="button" class="seg-btn active" data-mode="top9" onclick="setEmpMatrixMode('top9')" style="border:none;background:transparent;font-size:11px;font-weight:600;padding:5px 11px;border-radius:6px;cursor:pointer;color:var(--text2)">Top 9</button>
+            <button type="button" class="seg-btn" data-mode="all" onclick="setEmpMatrixMode('all')" style="border:none;background:transparent;font-size:11px;font-weight:600;padding:5px 11px;border-radius:6px;cursor:pointer;color:var(--text2)">All Employees</button>
+          </div>
+        </div>
+      </div>
       <div id="emp-matrix-grid" class="g3"></div>
     </div>
     <div class="card">
@@ -1231,7 +1248,7 @@ textarea.finput{resize:vertical;min-height:72px}
             <div class="tab" onclick="filterAssets('Desktop PC',this)">PCs</div>
             <div class="tab" onclick="filterAssets('Tablet',this)">Tablets</div>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="openModal('m-add-asset')">Register Asset</button>
+          <button class="btn btn-primary btn-sm" onclick="openNewModal('m-add-asset')">Register Asset</button>
         </div>
       </div>
       <div class="alert alert-info" style="margin-bottom:14px">Hover blurred fields to reveal. Sensitive data is obfuscated.</div>
@@ -1268,7 +1285,7 @@ textarea.finput{resize:vertical;min-height:72px}
 
     <div id="inv-packaging">
       <div class="card">
-        <div class="card-header"><div class="card-title">Packaging <span>Stock</span></div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-pkg')">Add</button></div>
+        <div class="card-header"><div class="card-title">Packaging <span>Stock</span></div><button class="btn btn-primary btn-sm" onclick="openNewModal('m-add-pkg')">Add</button></div>
         <div id="inv-pkg-toolbar"></div>
         <div id="inv-pkg-bulkbar"></div>
         <div class="tbl-wrap"><table>
@@ -1286,7 +1303,7 @@ textarea.finput{resize:vertical;min-height:72px}
     </div>
     <div id="inv-marketing" style="display:none">
       <div class="card">
-        <div class="card-header"><div class="card-title">Marketing <span>Materials</span></div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-mkt')">Add</button></div>
+        <div class="card-header"><div class="card-title">Marketing <span>Materials</span></div><button class="btn btn-primary btn-sm" onclick="openNewModal('m-add-mkt')">Add</button></div>
         <div id="inv-mkt-toolbar"></div>
         <div id="inv-mkt-bulkbar"></div>
         <div class="tbl-wrap"><table>
@@ -1331,7 +1348,7 @@ textarea.finput{resize:vertical;min-height:72px}
     </div>
     <div class="flex-gap mb20">
       <div class="tb-search" style="min-width:280px"><input type="text" id="vendor-search" placeholder="Search vendors…" oninput="renderVendors(this.value)"></div>
-      <button class="btn btn-primary" style="margin-left:auto" onclick="openModal('m-add-vendor')">Add Vendor</button>
+      <button class="btn btn-primary" style="margin-left:auto" onclick="openNewModal('m-add-vendor')">Add Vendor</button>
     </div>
     <div class="vendor-grid" id="vendor-cards"></div>
   </div>
@@ -1339,7 +1356,7 @@ textarea.finput{resize:vertical;min-height:72px}
   <div class="page" id="page-credentials">
     <div class="alert alert-danger"><strong>Confidential — Authorized Access Only.</strong>&nbsp;Hover blurred fields to reveal. Handle with care.</div>
     <div class="card">
-      <div class="card-header"><div class="card-title">Credentials <span>Vault</span></div><button class="btn btn-primary btn-sm" onclick="openModal('m-add-cred')">Add Entry</button></div>
+      <div class="card-header"><div class="card-title">Credentials <span>Vault</span></div><button class="btn btn-primary btn-sm" onclick="openNewModal('m-add-cred')">Add Entry</button></div>
       <div class="tab-bar mb16" id="cred-tabs">
         <div class="tab active" onclick="renderCredentials('All',this)">All</div>
         <div class="tab" onclick="renderCredentials('Social Media',this)">Social</div>
@@ -1384,7 +1401,7 @@ textarea.finput{resize:vertical;min-height:72px}
       <div id="doc-expiry-list"></div>
     </div>
     <div class="card mb20">
-      <div class="card-header"><div class="card-title">Document <span>Vault</span></div><button class="btn btn-primary btn-sm" onclick="resetOcrSection();openModal('m-add-doc')">Add Document</button></div>
+      <div class="card-header"><div class="card-title">Document <span>Vault</span></div><button class="btn btn-primary btn-sm" onclick="resetOcrSection();openNewModal('m-add-doc')">Add Document</button></div>
       <div class="flex-gap mb16">
         <div class="tb-search" style="min-width:240px"><input type="text" id="dv-search" placeholder="Search name, category, location, ref…" oninput="debounceSearch('dv', renderDocVault, 200)"></div>
         <select class="finput" id="dv-filter-cat" style="max-width:170px" onchange="renderDocVault()"><option value="">All Categories</option></select>
@@ -1665,6 +1682,13 @@ textarea.finput{resize:vertical;min-height:72px}
   <button class="modal-close" onclick="closeModal('m-asset-history')">×</button>
   <div id="ah-body" class="ah-timeline"><div class="ah-empty">Loading…</div></div>
   <div class="modal-footer"><button class="btn btn-outline" style="flex:1" onclick="closeModal('m-asset-history')">Close</button></div>
+</div></div>
+
+<div class="overlay" id="m-emp-assets"><div class="modal">
+  <div class="modal-title">Employee Assets <span id="ea-emp-label" style="color:var(--gold);font-weight:400"></span></div>
+  <button class="modal-close" onclick="closeModal('m-emp-assets')">×</button>
+  <div id="ea-body" class="ah-timeline"><div class="ah-empty">Loading…</div></div>
+  <div class="modal-footer"><button class="btn btn-outline" style="flex:1" onclick="closeModal('m-emp-assets')">Close</button><button class="btn btn-primary" style="flex:1" onclick="filterAssetsByEmployee(_currentEmpMatrixName)">View in Asset Register</button></div>
 </div></div>
 
 
@@ -2008,6 +2032,50 @@ function closeMobileSidebar(){
 // ── MODAL ────────────────────────────────────────────
 function openModal(id){ var e=$id(id); if(e) e.classList.add('open'); }
 function closeModal(id){ var e=$id(id); if(e) e.classList.remove('open'); _eid=null; }
+
+// Maps each "Add/Edit" modal to its title element + default ("Add …") title text.
+var _modalDefaultTitles={
+  'm-add-pantry':{titleId:'mt-pantry', text:'Add Usable Material'},
+  'm-add-fixed':{titleId:'mt-fixed', text:'Add Fixed Material'},
+  'm-add-month':{titleId:'mt-month', text:'Add Monthly Expense Entry'},
+  'm-add-stat':{titleId:'mt-stat', text:'Add Stationery Item'},
+  'm-add-stat-month':{titleId:'mt-statm', text:'Add Monthly Stationery Entry'},
+  'm-add-asset':{titleId:'mt-asset', text:'Register New Asset'},
+  'm-add-pkg':{titleId:'mt-pkg', text:'Add Packaging Item'},
+  'm-add-mkt':{titleId:'mt-mkt', text:'Add Marketing Item'},
+  'm-add-vendor':{titleId:'mt-vendor', text:'Add New Vendor'},
+  'm-add-cred':{titleId:'mt-cred', text:'Add Credential Entry'},
+  'm-add-doc':{titleId:'mt-doc', text:'Add Document'}
+};
+// Resets every field inside a register/add modal back to its original HTML default
+// (blank, or whatever default value/option the form was built with), and restores the
+// "Add …" title. Fixes the bug where registering one item, then opening the form again
+// for a new item, showed the previous item's details still filled in.
+function resetFormFields(modalId){
+  var modal=document.getElementById(modalId);
+  if(modal){
+    modal.querySelectorAll('.finput').forEach(function(el){
+      if(el.tagName==='SELECT'){
+        var idx=0;
+        for(var i=0;i<el.options.length;i++){ if(el.options[i].defaultSelected){ idx=i; break; } }
+        el.selectedIndex=idx;
+      } else {
+        el.value = (el.defaultValue!=null) ? el.defaultValue : '';
+      }
+    });
+  }
+  var t=_modalDefaultTitles[modalId];
+  if(t) st(t.titleId, t.text);
+  if(modalId==='m-add-doc'){ dvCatChange(); dvLocChange(); }
+}
+// Opens a modal for a brand-new record: clears any leftover edit-id and stale field
+// values first. Use this for "Add / Register" buttons; edit flows keep using openModal
+// directly since they populate fields themselves right before opening.
+function openNewModal(modalId){
+  _eid=null;
+  resetFormFields(modalId);
+  openModal(modalId);
+}
 
 // ── CONNECTION INDICATOR ─────────────────────────────
 function setConnStatus(state){
@@ -2657,6 +2725,9 @@ function calcDashboard(){
   st('hero-pantry',pa); st('hero-stat',sa);
   st('hero-inv', totalInv !== null ? totalInv.toLocaleString('en-IN') : 'N/A'); st('hero-assets', (FETCH_FAILED && FETCH_FAILED['assets']) ? 'N/A' : ast.length);
   st('hero-date','JEWELNME PRIVATE LIMITED · ADMIN NEXUS ERP · '+new Date().toLocaleString('en-IN',{month:'long',year:'numeric'}).toUpperCase());
+  var _hr=new Date().getHours();
+  var _greet=_hr<12?'Good morning':(_hr<17?'Good afternoon':'Good evening');
+  st('hero-greeting',_greet+' — here\'s where things stand.');
 
   buildChart(pm); buildSparks();
   var low=load(DB.statStock).filter(function(r){return Number(r.stock)<=Number(r.reorder);});
@@ -2699,7 +2770,7 @@ function buildSparks(){
     pm.slice(0,6).reverse().map(function(r){return Number(r.total||0);}),
     sm.slice(0,6).reverse().map(function(r){return Number(r.spend||0);}),
     Array(6).fill(ast.length),
-    [tv-300,tv-200,tv-100,tv-60,tv-20,tv].map(function(v){return Math.max(0,v);})
+    Array(6).fill(tv) // honest flat reference — no fabricated trend; we don't track historical inventory totals
   ];
   ['sp1','sp2','sp3','sp4'].forEach(function(id,i){
     var el=$id(id); if(!el) return; el.innerHTML='';
@@ -3004,6 +3075,15 @@ function editSM(id){
   st('mt-statm','Edit Monthly Entry'); openModal('m-add-stat-month');
 }
 // ── ASSETS (gated: requires sign-in per RLS) ─────────
+var _empMatrixMode='top9'; // 'top9' | 'all'
+var _currentEmpMatrixName=null;
+function setEmpMatrixMode(mode){
+  _empMatrixMode=mode;
+  var toggle=$id('emp-matrix-toggle'); if(toggle){
+    toggle.querySelectorAll('.seg-btn').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-mode')===mode); });
+  }
+  renderEmployeeAssetMatrix();
+}
 function renderEmployeeAssetMatrix(){
   var el=$id('emp-matrix-grid'); if(!el) return;
   if(FETCH_FAILED && FETCH_FAILED['assets']){
@@ -3019,13 +3099,43 @@ function renderEmployeeAssetMatrix(){
     byEmp[name].count++;
     byEmp[name].cats[r.type]=(byEmp[name].cats[r.type]||0)+1;
   });
-  var list=Object.keys(byEmp).map(function(k){ return byEmp[k]; }).sort(function(a,b){ return b.count-a.count; }).slice(0,9);
+  var fullList=Object.keys(byEmp).map(function(k){ return byEmp[k]; }).sort(function(a,b){ return b.count-a.count; });
+  var list = _empMatrixMode==='all' ? fullList : fullList.slice(0,9);
+  var sub=$id('emp-matrix-sub');
+  if(sub) sub.textContent = _empMatrixMode==='all'
+    ? 'All '+fullList.length+' employee'+(fullList.length!==1?'s':'')+' with allocated assets — click any employee for details'
+    : 'Top 9 most-assigned employees, by category — click any employee for details';
   el.innerHTML=list.map(function(e,i){
     var catStr=Object.keys(e.cats).map(function(c){ return c+' ('+e.cats[c]+')'; }).join(', ');
-    return '<div class="emp-matrix-item"><div class="em-rank">'+(i+1)+'</div>'+
+    return '<div class="emp-matrix-item" onclick="openEmployeeAssetDetail(\''+esc(e.name).replace(/'/g,"\\'")+'\')"><div class="em-rank">'+(i+1)+'</div>'+
       '<div><div class="em-name">'+esc(e.name)+'</div><div class="em-cats">'+esc(catStr)+'</div></div>'+
       '<div class="em-count">'+e.count+'</div></div>';
   }).join('');
+}
+// Shows the full asset list + details for a single employee in a modal (clicked from the matrix)
+function openEmployeeAssetDetail(name){
+  _currentEmpMatrixName=name;
+  openModal('m-emp-assets');
+  $id('ea-emp-label').textContent='· '+name;
+  var body=$id('ea-body');
+  var assets=load(DB.assets).filter(function(r){ return r.emp && r.emp.trim()===name; });
+  if(!assets.length){ body.innerHTML='<div class="ah-empty">No assets currently allocated to '+esc(name)+'.</div>'; return; }
+  var sbdg={Active:'bg',Available:'bb',Repair:'br',Retired:'bgy'};
+  body.innerHTML=assets.map(function(r){
+    return '<div class="ah-item"><div class="ah-txt"><strong>'+esc(r.model)+'</strong> · '+esc(r.type)+
+      ' · Asset ID: '+esc(r.id)+(r.serial?' · Serial: '+esc(r.serial):'')+
+      ' <span class="badge '+(sbdg[r.status]||'bgy')+'" style="margin-left:6px">'+esc(r.status)+'</span></div>'+
+      '<div class="ah-meta">'+(r.date?'Allocated since '+esc(r.date):'No allocation date on record')+(r.notes?' · '+esc(r.notes):'')+'</div></div>';
+  }).join('');
+}
+// Jumps to the Asset Register table pre-filtered to this employee's assets (reuses the existing search filter)
+function filterAssetsByEmployee(name){
+  if(!name) return;
+  closeModal('m-emp-assets');
+  go('assets');
+  renderAssets(null, name);
+  var sInput=document.querySelector('#assets-toolbar .dt-search input');
+  if(sInput) sInput.value=name;
 }
 var _assetIds=[]; var _astFilter=null; var _astSearch='';
 function renderAssets(filterType, searchText){
@@ -3573,9 +3683,21 @@ function dtPaintSortHeaders(theadId, tableId){
     if(arrow) arrow.textContent = (th.getAttribute('data-key')===st.sortKey) ? (st.sortDir===1?'▲':'▼') : '▲';
   });
 }
-function dtSearchInput(tableId, val, renderFn){
+function dtSearchInput(tableId, inputEl, renderFn){
+  var val = inputEl.value;
+  var caret = inputEl.selectionStart;
   dtGet(tableId).search = val;
-  debounceSearch('dt_'+tableId, renderFn, 150);
+  debounceSearch('dt_'+tableId, function(){
+    renderFn();
+    // The re-render just replaced the toolbar's innerHTML (including this input),
+    // which is what dropped focus after one keystroke. Re-find the new input and
+    // restore focus + cursor position so typing continues uninterrupted.
+    var freshInput = document.querySelector('#'+tableId+'-toolbar .dt-search input');
+    if(freshInput){
+      freshInput.focus();
+      try{ freshInput.setSelectionRange(caret, caret); }catch(e){}
+    }
+  }, 150);
 }
 function dtToggleRow(tableId, id, checkboxEl){
   var st = dtGet(tableId);
@@ -3647,7 +3769,7 @@ function dtToolbarHTML(tableId, opts){
   opts = opts || {};
   var st = dtGet(tableId);
   return '<div class="dt-toolbar">'+
-    '<div class="dt-search"><input type="text" placeholder="'+(opts.placeholder||'Search…')+'" value="'+esc(st.search)+'" oninput="dtSearchInput(\''+tableId+'\',this.value,'+opts.renderFnName+')"></div>'+
+    '<div class="dt-search"><input type="text" placeholder="'+(opts.placeholder||'Search…')+'" value="'+esc(st.search)+'" oninput="dtSearchInput(\''+tableId+'\',this,'+opts.renderFnName+')"></div>'+
     '<span class="dt-count">'+(opts.count!=null?opts.count+' record'+(opts.count===1?'':'s'):'')+'</span>'+
     '<div class="dt-toolbar-actions">'+
       (opts.onExport? '<button class="dt-btn" onclick="'+opts.onExport+'">⇩ Export CSV</button>':'')+
